@@ -1,50 +1,63 @@
-import React from "react";
-import { Form, Segment, Header } from 'semantic-ui-react'
-import axios from 'axios'
-import { useFormInput } from '../hooks';
-
+import React, { useState } from "react";
+import axiosWithAuth from "../utils/axiosWithAuth";
 
 const Login = props => {
-  
-  const [values, changeHandler] = useFormInput({ username: '', password: '' })
+  // make a post request to retrieve a token from the api
+  // when you have handled the token, navigate to the BubblePage route
 
-  const logInHandler = () => {
-    axios
-      .post(`http://localhost:5000/api/login`, values)
+  const [user, setUser] = useState({
+    username: "",
+    password: ""
+  });
+
+  const handleChange = e => {
+    setUser({
+      ...user,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const login = e => {
+    e.preventDefault();
+    axiosWithAuth()
+      .post("/login", user)
       .then(res => {
-        localStorage.setItem('token', res.data.payload)
-        props.history.push('/bubblepage')
+        localStorage.setItem("token", res.data.payload);
+        props.history.push("/bubbles");
       })
-      .catch(err => console.log('LogIn: POST:', err, values))
-  }
+      .catch(err => console.error(err));
+  };
 
-  return (
-    <Segment>
-      <Segment>
-        <Header>Log In</Header>
-        <Form
-          onSubmit={logInHandler}>
-          <Form.Input 
-            fluid
-            label='Username'
-            name='username'
-            placeholder='Username'
-            value={values.username}
-            onChange={changeHandler}
+  return (    
+    <div className="SignIn">
+      <div>
+      <h1>It's some small <em>Bubbles</em> after all!</h1>
+      <hr/>
+    </div>
+      <form className="login-form" onSubmit={login}>
+        <div>
+          <label htmlFor="username">Username:</label>
+          <input
+            name="username"
+            placeholder="Username"
+            onChange={handleChange}
+            value={user.username}
           />
-          <Form.Input 
-            fluid
-            label='Password'
-            name='password'
-            placeholder='Password'
-            value={values.password}
-            onChange={changeHandler}
+        </div>
+        <div>
+          <label htmlFor="password">Password:</label>
+          <input
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            value={user.password}
           />
-          <Form.Button>Log In</Form.Button>
-        </Form>         
-      </Segment>
-    </Segment>
+        </div>
+        <div>
+          <button className="enter">Login</button>
+        </div>
+      </form>
+    </div>
   );
 };
-
 export default Login;
